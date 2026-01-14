@@ -43,9 +43,7 @@ The project demonstrates the use of both **Entity Framework (EF)** for standard 
 - ASP.NET MVC 5
 - Entity Framework Core (Code First)
 - ADO.NET
-- SQL Server / PostgreSQL
-- Flutter (for API consumption)
-- Bootstrap for MVC views (optional)
+- SQL Server 
 - C# and .NET 8
 
 ---
