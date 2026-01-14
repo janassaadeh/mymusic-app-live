@@ -16,7 +16,8 @@ namespace mymusic_app.Data
 
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
-            optionsBuilder.UseSqlServer(
+            // Use Npgsql for PostgreSQL
+            optionsBuilder.UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection")
             );
 

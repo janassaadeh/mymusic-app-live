@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using Npgsql;
 using Microsoft.Extensions.Configuration;
 using mymusic_app.Models;
 using System;
@@ -23,18 +23,16 @@ namespace mymusic_app.Repositories
         {
             var songs = new List<Song>();
 
-            using var conn = new SqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
 
-            var cmd = new SqlCommand(@"
-                SELECT TOP 20
+            await using var cmd = new NpgsqlCommand(@"
+                SELECT
                     s.Id,
                     s.Title,
                     s.Duration,
-
                     a.Id AS ArtistId,
                     a.Name AS ArtistName,
-
                     al.Id AS AlbumId,
                     al.Title AS AlbumTitle,
                     al.CoverImageUrl
@@ -44,11 +42,12 @@ namespace mymusic_app.Repositories
                 LEFT JOIN Albums al ON s.AlbumId = al.Id
                 WHERE p.UserId = @UserId
                 ORDER BY p.PlayedAt DESC
+                LIMIT 20
             ", conn);
 
-            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("UserId", userId);
 
-            using var reader = await cmd.ExecuteReaderAsync();
+            await using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
                 songs.Add(new Song
@@ -56,13 +55,11 @@ namespace mymusic_app.Repositories
                     Id = reader.GetGuid(0),
                     Title = reader.GetString(1),
                     Duration = reader.GetTimeSpan(2),
-
                     Artist = reader.IsDBNull(3) ? null : new Artist
                     {
                         Id = reader.GetGuid(3),
                         Name = reader.GetString(4)
                     },
-
                     Album = reader.IsDBNull(5) ? null : new Album
                     {
                         Id = reader.GetGuid(5),
@@ -77,16 +74,16 @@ namespace mymusic_app.Repositories
 
         public async Task DeleteOldRecentlyPlayedAsync(Guid userId)
         {
-            using var conn = new SqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
 
-            var cmd = new SqlCommand(@"
+            await using var cmd = new NpgsqlCommand(@"
                 DELETE FROM UserSongPlays
                 WHERE UserId = @UserId
-                  AND PlayedAt < DATEADD(day, -1, GETDATE())
+                  AND PlayedAt < NOW() - INTERVAL '1 day'
             ", conn);
 
-            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("UserId", userId);
             await cmd.ExecuteNonQueryAsync();
         }
 
@@ -97,22 +94,19 @@ namespace mymusic_app.Repositories
         {
             var result = new List<(User, Song)>();
 
-            using var conn = new SqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
 
-            var cmd = new SqlCommand(@"
-                SELECT TOP 20
+            await using var cmd = new NpgsqlCommand(@"
+                SELECT
                     u.Id,
                     u.FirstName,
                     u.LastName,
-
                     s.Id,
                     s.Title,
                     s.Duration,
-
                     a.Id AS ArtistId,
                     a.Name AS ArtistName,
-
                     al.Id AS AlbumId,
                     al.Title AS AlbumTitle,
                     al.CoverImageUrl
@@ -124,11 +118,12 @@ namespace mymusic_app.Repositories
                 LEFT JOIN Albums al ON s.AlbumId = al.Id
                 WHERE f.UserId = @UserId
                 ORDER BY p.PlayedAt DESC
+                LIMIT 20
             ", conn);
 
-            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("UserId", userId);
 
-            using var reader = await cmd.ExecuteReaderAsync();
+            await using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
                 var user = new User
@@ -143,13 +138,11 @@ namespace mymusic_app.Repositories
                     Id = reader.GetGuid(3),
                     Title = reader.GetString(4),
                     Duration = reader.GetTimeSpan(5),
-
                     Artist = reader.IsDBNull(6) ? null : new Artist
                     {
                         Id = reader.GetGuid(6),
                         Name = reader.GetString(7)
                     },
-
                     Album = reader.IsDBNull(8) ? null : new Album
                     {
                         Id = reader.GetGuid(8),
@@ -169,16 +162,16 @@ namespace mymusic_app.Repositories
         // ============================================================
         public async Task RecordSongPlayAsync(Guid userId, Guid songId)
         {
-            using var conn = new SqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
 
-            var cmd = new SqlCommand(@"
+            await using var cmd = new NpgsqlCommand(@"
                 INSERT INTO UserSongPlays (Id, UserId, SongId, PlayedAt)
-                VALUES (NEWID(), @UserId, @SongId, GETDATE())
+                VALUES (gen_random_uuid(), @UserId, @SongId, NOW())
             ", conn);
 
-            cmd.Parameters.AddWithValue("@UserId", userId);
-            cmd.Parameters.AddWithValue("@SongId", songId);
+            cmd.Parameters.AddWithValue("UserId", userId);
+            cmd.Parameters.AddWithValue("SongId", songId);
 
             await cmd.ExecuteNonQueryAsync();
         }
@@ -188,36 +181,35 @@ namespace mymusic_app.Repositories
         // ============================================================
         public async Task LikeSongAsync(Guid userId, Guid songId)
         {
-            using var conn = new SqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
 
-            var cmd = new SqlCommand(@"
-                IF NOT EXISTS (
-                    SELECT 1 FROM UserSongLikes
-                    WHERE UserId = @UserId AND SongId = @SongId
-                )
+            await using var cmd = new NpgsqlCommand(@"
                 INSERT INTO UserSongLikes (Id, UserId, SongId)
-                VALUES (NEWID(), @UserId, @SongId)
+                SELECT gen_random_uuid(), @UserId, @SongId
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM UserSongLikes WHERE UserId = @UserId AND SongId = @SongId
+                )
             ", conn);
 
-            cmd.Parameters.AddWithValue("@UserId", userId);
-            cmd.Parameters.AddWithValue("@SongId", songId);
+            cmd.Parameters.AddWithValue("UserId", userId);
+            cmd.Parameters.AddWithValue("SongId", songId);
 
             await cmd.ExecuteNonQueryAsync();
         }
 
         public async Task UnlikeSongAsync(Guid userId, Guid songId)
         {
-            using var conn = new SqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
 
-            var cmd = new SqlCommand(@"
+            await using var cmd = new NpgsqlCommand(@"
                 DELETE FROM UserSongLikes
                 WHERE UserId = @UserId AND SongId = @SongId
             ", conn);
 
-            cmd.Parameters.AddWithValue("@UserId", userId);
-            cmd.Parameters.AddWithValue("@SongId", songId);
+            cmd.Parameters.AddWithValue("UserId", userId);
+            cmd.Parameters.AddWithValue("SongId", songId);
 
             await cmd.ExecuteNonQueryAsync();
         }
@@ -227,36 +219,35 @@ namespace mymusic_app.Repositories
         // ============================================================
         public async Task FollowUserAsync(Guid userId, Guid followUserId)
         {
-            using var conn = new SqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
 
-            var cmd = new SqlCommand(@"
-                IF NOT EXISTS (
-                    SELECT 1 FROM Followings
-                    WHERE UserId = @UserId AND FollowingId = @FollowId
-                )
+            await using var cmd = new NpgsqlCommand(@"
                 INSERT INTO Followings (Id, UserId, FollowingId)
-                VALUES (NEWID(), @UserId, @FollowId)
+                SELECT gen_random_uuid(), @UserId, @FollowId
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM Followings WHERE UserId = @UserId AND FollowingId = @FollowId
+                )
             ", conn);
 
-            cmd.Parameters.AddWithValue("@UserId", userId);
-            cmd.Parameters.AddWithValue("@FollowId", followUserId);
+            cmd.Parameters.AddWithValue("UserId", userId);
+            cmd.Parameters.AddWithValue("FollowId", followUserId);
 
             await cmd.ExecuteNonQueryAsync();
         }
 
         public async Task UnfollowUserAsync(Guid userId, Guid followUserId)
         {
-            using var conn = new SqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
 
-            var cmd = new SqlCommand(@"
+            await using var cmd = new NpgsqlCommand(@"
                 DELETE FROM Followings
                 WHERE UserId = @UserId AND FollowingId = @FollowId
             ", conn);
 
-            cmd.Parameters.AddWithValue("@UserId", userId);
-            cmd.Parameters.AddWithValue("@FollowId", followUserId);
+            cmd.Parameters.AddWithValue("UserId", userId);
+            cmd.Parameters.AddWithValue("FollowId", followUserId);
 
             await cmd.ExecuteNonQueryAsync();
         }
@@ -266,36 +257,35 @@ namespace mymusic_app.Repositories
         // ============================================================
         public async Task FollowArtistAsync(Guid userId, Guid artistId)
         {
-            using var conn = new SqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
 
-            var cmd = new SqlCommand(@"
-                IF NOT EXISTS (
-                    SELECT 1 FROM UserArtistFollows
-                    WHERE UserId = @UserId AND ArtistId = @ArtistId
-                )
+            await using var cmd = new NpgsqlCommand(@"
                 INSERT INTO UserArtistFollows (Id, UserId, ArtistId)
-                VALUES (NEWID(), @UserId, @ArtistId)
+                SELECT gen_random_uuid(), @UserId, @ArtistId
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM UserArtistFollows WHERE UserId = @UserId AND ArtistId = @ArtistId
+                )
             ", conn);
 
-            cmd.Parameters.AddWithValue("@UserId", userId);
-            cmd.Parameters.AddWithValue("@ArtistId", artistId);
+            cmd.Parameters.AddWithValue("UserId", userId);
+            cmd.Parameters.AddWithValue("ArtistId", artistId);
 
             await cmd.ExecuteNonQueryAsync();
         }
 
         public async Task UnfollowArtistAsync(Guid userId, Guid artistId)
         {
-            using var conn = new SqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
 
-            var cmd = new SqlCommand(@"
+            await using var cmd = new NpgsqlCommand(@"
                 DELETE FROM UserArtistFollows
                 WHERE UserId = @UserId AND ArtistId = @ArtistId
             ", conn);
 
-            cmd.Parameters.AddWithValue("@UserId", userId);
-            cmd.Parameters.AddWithValue("@ArtistId", artistId);
+            cmd.Parameters.AddWithValue("UserId", userId);
+            cmd.Parameters.AddWithValue("ArtistId", artistId);
 
             await cmd.ExecuteNonQueryAsync();
         }
@@ -305,36 +295,35 @@ namespace mymusic_app.Repositories
         // ============================================================
         public async Task FollowPlaylistAsync(Guid userId, Guid playlistId)
         {
-            using var conn = new SqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
 
-            var cmd = new SqlCommand(@"
-                IF NOT EXISTS (
-                    SELECT 1 FROM UserPlaylistFollows
-                    WHERE UserId = @UserId AND PlaylistId = @PlaylistId
-                )
+            await using var cmd = new NpgsqlCommand(@"
                 INSERT INTO UserPlaylistFollows (Id, UserId, PlaylistId)
-                VALUES (NEWID(), @UserId, @PlaylistId)
+                SELECT gen_random_uuid(), @UserId, @PlaylistId
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM UserPlaylistFollows WHERE UserId = @UserId AND PlaylistId = @PlaylistId
+                )
             ", conn);
 
-            cmd.Parameters.AddWithValue("@UserId", userId);
-            cmd.Parameters.AddWithValue("@PlaylistId", playlistId);
+            cmd.Parameters.AddWithValue("UserId", userId);
+            cmd.Parameters.AddWithValue("PlaylistId", playlistId);
 
             await cmd.ExecuteNonQueryAsync();
         }
 
         public async Task UnfollowPlaylistAsync(Guid userId, Guid playlistId)
         {
-            using var conn = new SqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
 
-            var cmd = new SqlCommand(@"
+            await using var cmd = new NpgsqlCommand(@"
                 DELETE FROM UserPlaylistFollows
                 WHERE UserId = @UserId AND PlaylistId = @PlaylistId
             ", conn);
 
-            cmd.Parameters.AddWithValue("@UserId", userId);
-            cmd.Parameters.AddWithValue("@PlaylistId", playlistId);
+            cmd.Parameters.AddWithValue("UserId", userId);
+            cmd.Parameters.AddWithValue("PlaylistId", playlistId);
 
             await cmd.ExecuteNonQueryAsync();
         }
