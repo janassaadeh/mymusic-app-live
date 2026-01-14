@@ -160,7 +160,6 @@ The project demonstrates the use of both **Entity Framework (EF)** for standard 
 ### Top Songs by Genre
 ![Top Songs by Genre](Screenshots/top-by-genres.png)
 
-> Add more screenshots as needed for other MVC views.
 
 ---
 
