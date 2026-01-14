@@ -29,7 +29,7 @@ namespace mymusic_app.Controllers
                 topSongsByGenre.Add(new GenreTopSongsViewModel
                 {
                     Genre = genre,
-                    TopSongs = songs.Take(1).ToList() // or Take(5)
+                    TopSongs = songs.Take(5).ToList() 
                 });
             }
 
