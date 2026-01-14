@@ -1,0 +1,29 @@
+﻿@inject Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper Html
+
+<div class="mb-5 px-3 d-flex align-items-center">
+    <i class="bi bi-disc-fill text-primary fs-3 me-3"></i>
+    <div>
+        <p class="mb-0 fw-bold text-dark fs-5 lh-1">Music Manager</p>
+        <small class="text-muted text-uppercase" style="font-size: 0.65rem; letter-spacing: 1px;">Admin Console</small>
+    </div>
+</div>
+<nav>
+    <!-- Dashboard Link -->
+    <a href="/admin" class="nav-link-custom @(ViewContext.RouteData.Values["controller"]?.ToString() == "Admin" ? "active" : "")">
+        <i class="bi bi-house-door"></i> Dashboard
+    </a>
+
+    <!-- Top Songs Link -->
+    <a href="/admin/genres/TopSongsDashboard" class="nav-link-custom @(ViewContext.RouteData.Values["controller"]?.ToString() == "Genres" ? "active" : "")">
+        <i class="bi bi-trophy me-2"></i> Top Songs
+    </a>
+
+    <hr class="my-4 opacity-10">
+
+    <!-- Logout Form (POST) -->
+    <form action="/auth/logout" method="POST" style="display:inline;">
+        <button type="submit" class="nav-link-custom text-danger" style="border:none; background:none; padding:0; cursor:pointer;">
+            <i class="bi bi-box-arrow-left"></i> Logout
+        </button>
+    </form>
+</nav>

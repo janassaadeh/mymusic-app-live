@@ -1,0 +1,165 @@
+﻿@model mymusic_app.Controllers.EditProfileViewModel
+
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<style>
+    body {
+        background: linear-gradient(135deg, #f5f0ff 0%, #e0e7ff 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        padding: 20px;
+    }
+
+    .edit-card {
+        background: white;
+        border-radius: 28px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+        padding: 40px;
+        width: 100%;
+        max-width: 450px;
+    }
+
+    .music-icon {
+        background-color: #fce4ec;
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 22px;
+    }
+
+    .header-text {
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+
+    .sub-text {
+        color: #9ca3af;
+        font-size: 0.9rem;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-label {
+        color: #6b7280;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control {
+        background-color: #eff4ff;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        color: #1f2937;
+        width: 100%;
+        transition: all 0.2s;
+    }
+
+        .form-control:focus {
+            background-color: #e5edff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(194, 201, 255, 0.4);
+        }
+
+    textarea.form-control {
+        resize: none;
+        min-height: 100px;
+    }
+
+    .btn-save {
+        background-color: #c2c9ff;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 12px;
+        font-weight: 700;
+        width: 100%;
+        margin-top: 10px;
+        cursor: pointer;
+        transition: transform 0.1s, background-color 0.2s;
+    }
+
+        .btn-save:hover {
+            background-color: #b0b8ff;
+        }
+
+        .btn-save:active {
+            transform: scale(0.98);
+        }
+
+    .cancel-link {
+        display: block;
+        text-align: center;
+        margin-top: 20px;
+        color: #9ca3af;
+        font-size: 0.85rem;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+        .cancel-link:hover {
+            color: #6b7280;
+            text-decoration: underline;
+        }
+
+    .text-danger {
+        font-size: 0.75rem;
+        margin-top: 4px;
+        display: block;
+    }
+</style>
+
+<div class="edit-card">
+    <div class="music-icon">🎵</div>
+
+    <h2 class="header-text">Edit Profile</h2>
+    <p class="sub-text">Update your public information</p>
+
+    <form asp-action="Edit" method="post">
+        <div class="form-group">
+            <label asp-for="FirstName" class="form-label">First Name</label>
+            <input asp-for="FirstName" class="form-control" placeholder="Enter first name" />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="LastName" class="form-label">Last Name</label>
+            <input asp-for="LastName" class="form-control" placeholder="Enter last name" />
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Bio" class="form-label">Bio</label>
+            <textarea asp-for="Bio" class="form-control" placeholder="Tell us about your music taste..."></textarea>
+            <span asp-validation-for="Bio" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn-save">Save Changes</button>
+
+        <a href="/Account/Dashboard" class="cancel-link">Nevermind, go back</a>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

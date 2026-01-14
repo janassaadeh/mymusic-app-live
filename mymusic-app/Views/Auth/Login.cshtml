@@ -1,0 +1,155 @@
+﻿@{
+    ViewData["Title"] = "Admin Login";
+    Layout = null; // No shared layout applied
+
+}
+
+<style>
+    :root {
+        --primary-pastel: #B8C0FF; /* Soft Lavender Blue */
+        --accent-pastel: #FFD6E0; /* Soft Pink */
+        --bg-color: #F8F9FA;
+        --text-main: #4A4E69;
+    }
+
+    body {
+        background-color: var(--bg-color);
+        background-image: radial-gradient(at 0% 0%, #E7C6FF 0px, transparent 50%), radial-gradient(at 100% 100%, #B8C0FF 0px, transparent 50%);
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        color: var(--text-main);
+        margin: 0;
+    }
+
+    .login-container {
+        background: #ffffff;
+        padding: 3rem;
+        border-radius: 24px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+        width: 100%;
+        max-width: 420px;
+        text-align: center;
+        box-sizing: border-box; /* Ensures padding doesn't add to width */
+    }
+
+    .brand-icon {
+        width: 60px;
+        height: 60px;
+        background: var(--accent-pastel);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: white;
+        font-size: 1.8rem;
+    }
+
+    h2 {
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        margin-bottom: 0.5rem;
+        color: #222;
+    }
+
+    .subtitle {
+        color: #999;
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        text-align: left;
+        margin-bottom: 1.25rem;
+        width: 100%;
+    }
+
+    label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-left: 4px;
+        margin-bottom: 6px;
+        display: block;
+        color: #777;
+    }
+
+    .form-control {
+        width: 100%; /* Makes field fit the container */
+        box-sizing: border-box; /* Includes padding in the width calculation */
+        border: 2px solid #F1F3F5;
+        background: #F8F9FA;
+        border-radius: 12px;
+        padding: 12px 16px;
+        transition: all 0.2s ease;
+        font-size: 0.95rem;
+    }
+
+        .form-control:focus {
+            background: #fff;
+            border-color: var(--primary-pastel);
+            box-shadow: 0 0 0 4px rgba(184, 192, 255, 0.2);
+            outline: none;
+        }
+
+    .btn-login {
+        background: var(--primary-pastel);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px;
+        width: 100%;
+        font-weight: 600;
+        margin-top: 1rem;
+        transition: transform 0.2s ease, background 0.2s ease;
+        cursor: pointer;
+    }
+
+        .btn-login:hover {
+            background: #A0ACFF;
+            transform: translateY(-1px);
+        }
+
+    .error-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 1rem;
+        font-size: 0.85rem;
+        color: #FF85A1;
+    }
+</style>
+
+<div class="login-container">
+    <div class="brand-icon">
+        <i class="bi bi-music-note-beamed">🎵</i>
+    </div>
+
+    <h2>Welcome back</h2>
+    <p class="subtitle">Please enter your admin credentials</p>
+
+    <form asp-action="Login" method="post">
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" required class="form-control" placeholder="name@studio.com" />
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" required class="form-control" placeholder="••••••••" />
+        </div>
+
+        <button type="submit" class="btn-login">Sign In</button>
+    </form>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <ul class="error-list">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+    }
+</div>

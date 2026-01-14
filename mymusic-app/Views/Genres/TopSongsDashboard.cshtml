@@ -1,0 +1,233 @@
+﻿@model IEnumerable<mymusic_app.Controllers.GenreTopSongsViewModel>
+
+@{
+    Layout = "_Layout";
+}
+
+<style>
+    :root {
+        --primary-pastel: #B8C0FF;
+        --accent-pastel: #FFD6E0;
+        --bg-color: #F8F9FA;
+        --text-main: #4A4E69;
+        --card-bg: #ffffff;
+        --gold: #FFD700;
+        --silver: #C0C0C0;
+        --bronze: #CD7F32;
+    }
+
+    .leaderboard-wrapper {
+        padding: 40px 20px;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .genre-block {
+        max-width: 900px;
+        margin: 0 auto 50px auto;
+    }
+
+    .leaderboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 20px;
+        padding: 0 10px;
+    }
+
+    .leaderboard-title {
+        font-weight: 800;
+        color: var(--text-main);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-left: 5px solid var(--primary-pastel);
+        padding-left: 15px;
+        margin: 0;
+    }
+
+    .leaderboard-container {
+        background: var(--card-bg);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    .rank-row {
+        display: grid;
+        grid-template-columns: 60px 50px 1fr 1fr 100px;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.2s ease;
+    }
+
+        .rank-row:last-child {
+            border-bottom: none;
+        }
+
+        .rank-row:hover {
+            background-color: #fcfcff;
+        }
+
+    .rank-num {
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: #adb5bd;
+    }
+
+    .rank-1 .rank-num {
+        color: var(--gold);
+        font-size: 1.4rem;
+    }
+
+    .rank-2 .rank-num {
+        color: var(--silver);
+    }
+
+    .rank-3 .rank-num {
+        color: var(--bronze);
+    }
+
+    .rank-1 {
+        background: linear-gradient(90deg, #fffcf0 0%, #ffffff 100%);
+    }
+
+    .album-art {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--primary-pastel);
+    }
+
+    .rank-1 .album-art {
+        width: 48px;
+        height: 48px;
+    }
+
+    .album-art img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.2s ease;
+    }
+
+    .rank-row:hover .album-art img {
+        transform: scale(1.05);
+    }
+
+    .song-title {
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .artist-name, .album-name {
+        font-size: 0.85rem;
+        color: #7d81a8;
+        margin: 0;
+    }
+
+    .trending-icon {
+        color: #4CAF50;
+        font-size: 0.8rem;
+        text-align: right;
+    }
+
+    .label-header {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: #adb5bd;
+        padding: 10px 20px;
+        background: #fafafa;
+        border-bottom: 1px solid #eee;
+    }
+</style>
+
+<div class="leaderboard-wrapper">
+    <div class="container">
+
+        <div class="text-center mb-5">
+            <h1 class="fw-black display-5" style="color: var(--text-main);">Charts</h1>
+            <p class="text-muted">Most played tracks by genre this week</p>
+        </div>
+
+        @foreach (var item in Model)
+        {
+            <div class="genre-block">
+                <div class="leaderboard-header">
+                    <h2 class="leaderboard-title h4">@item.Genre.Name</h2>
+                    <span class="badge rounded-pill"
+                          style="background: var(--accent-pastel); color: var(--text-main);">
+                        Global Ranking
+                    </span>
+                </div>
+
+                <div class="leaderboard-container">
+                    <div class="rank-row label-header d-none d-md-grid">
+                        <span>Rank</span>
+                        <span></span>
+                        <span>Track</span>
+                        <span>Album</span>
+                        <span class="text-end">Status</span>
+                    </div>
+
+                    @{
+                        int rank = 1;
+                    }
+
+                    @if (item.TopSongs.Any())
+                    {
+                        @foreach (var song in item.TopSongs)
+                        {
+                            <div class="rank-row rank-@rank">
+                                <div class="rank-num">#@rank</div>
+
+                                <div class="album-art"
+                                     style="background-color:@(rank == 1 ? "var(--primary-pastel)" : "var(--accent-pastel)")">
+                                    @if (!string.IsNullOrEmpty(song.Album?.CoverImageUrl))
+                                    {
+                                        <img src="@song.Album.CoverImageUrl"
+                                             alt="@song.Album.Title album cover"
+                                             loading="lazy"
+                                             onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=&quot;bi bi-music-note text-white&quot;></i>';" />
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-music-note text-white"></i>
+                                    }
+                                </div>
+
+                                <div class="ps-2">
+                                    <p class="song-title">@song.Title</p>
+                                    <p class="artist-name">@song.Album?.Artist?.Name</p>
+                                </div>
+
+                                <div class="album-name d-none d-md-block">
+                                    @song.Album?.Title
+                                </div>
+
+                                <div class="trending-icon">
+                                    <i class="bi bi-graph-up-arrow"></i>
+                                    <span class="ms-1">HOT</span>
+                                </div>
+                            </div>
+
+                            rank++;
+                        }
+                    }
+                    else
+                    {
+                        <div class="p-4 text-center text-muted">
+                            No data available for this genre.
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

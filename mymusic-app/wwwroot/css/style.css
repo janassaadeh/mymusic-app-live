@@ -1,0 +1,147 @@
+﻿:root {
+    --primary-pastel: #B8C0FF;
+    --accent-pastel: #FFD6E0;
+    --bg-color: #F8F9FA;
+    --text-main: #4A4E69;
+    --card-bg: #ffffff;
+    --card-shadow: rgba(0,0,0,0.03);
+    --sidebar-width: 280px;
+}
+
+body {
+    background-color: var(--bg-color);
+    background-image: radial-gradient(at 0% 0%, #E7C6FF 0px, transparent 50%), radial-gradient(at 100% 100%, #B8C0FF 0px, transparent 50%);
+    font-family: 'Inter', sans-serif;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: white;
+    border-right: 1px solid rgba(0,0,0,0.05);
+    padding: 2rem 1.5rem;
+    z-index: 1000;
+}
+
+.main-wrapper {
+    margin-left: calc(var(--sidebar-width) - 120px); 
+    padding: 1rem;
+}
+
+
+.nav-link-custom {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: var(--text-main);
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.2s;
+    margin-bottom: 0.5rem;
+}
+
+    .nav-link-custom:hover, .nav-link-custom.active {
+        background: var(--primary-pastel);
+        color: white;
+    }
+
+::–webkit-scrollbar {
+    width: 8px;
+}
+
+::–webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::–webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+/* Cards */
+.genre-card {
+    background: var(--card-bg);
+    border: none;
+    border-radius: 24px;
+    box-shadow: 0 10px 25px var(--card-shadow);
+    margin-bottom: 4rem;
+    overflow: hidden;
+    transition: transform 0.2s ease;
+}
+
+    .genre-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px var(--card-shadow);
+    }
+
+.genre-header {
+    background: linear-gradient(90deg, var(--primary-pastel), var(--accent-pastel));
+    padding: 2rem;
+    color: white;
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+}
+
+.artist-wrapper {
+    border-left: 3px solid #E7C6FF;
+    margin-left: 1.5rem;
+    padding-left: 2rem;
+    position: relative;
+}
+
+.artist-item {
+    background: var(--card-bg);
+    border-radius: 20px;
+    border: 1px solid #f1f3f5;
+    margin-bottom: 2.5rem;
+    transition: transform 0.2s ease;
+}
+
+.album-box {
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid #f1f3f5;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.btn-action {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: var(--primary-pastel);
+    color: white;
+    border: none;
+}
+
+.form-control {
+    border-radius: 12px;
+    padding: 12px 16px;
+    border: 2px solid #F1F3F5;
+    background: #F8F9FA;
+    transition: all 0.2s ease;
+}
+
+.song-table {
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 1rem;
+    background: var(--card-bg);
+    box-shadow: 0 5px 15px var(--card-shadow);
+}
+
+.badge-id {
+    font-family: monospace;
+    font-size: 0.7rem;
+    opacity: 0.6;
+}
