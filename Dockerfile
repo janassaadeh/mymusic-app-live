@@ -6,7 +6,7 @@ WORKDIR /src
 COPY *.sln ./
 
 # Copy csproj files for restore
-COPY mymusic-app/*.csproj ./mymusic-app/
+COPY mymusic-app/*.cs ./mymusic-app/
 
 # Restore dependencies
 RUN dotnet restore
