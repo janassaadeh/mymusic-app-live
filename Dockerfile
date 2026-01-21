@@ -1,12 +1,10 @@
-# Use official .NET SDK image for building
+# Stage 1: Build
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 
-# Copy solution file first
+# Copy solution and project files
 COPY *.sln ./
-
-# Copy csproj files for restore
-COPY mymusic-app/*.cs ./mymusic-app/
+COPY mymusic-app/*.csproj ./mymusic-app/
 
 # Restore dependencies
 RUN dotnet restore
@@ -14,14 +12,17 @@ RUN dotnet restore
 # Copy the rest of the source code
 COPY mymusic-app/. ./mymusic-app/
 
-# Build the project
+# Publish the app
 WORKDIR /src/mymusic-app
 RUN dotnet publish -c Release -o /app/publish
 
-# Runtime image
+# Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:7.0
 WORKDIR /app
 COPY --from=build /app/publish .
 
+# Expose port
 EXPOSE 80
+
+# Start app
 ENTRYPOINT ["dotnet", "mymusic-app.dll"]
