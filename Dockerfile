@@ -5,13 +5,13 @@ FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 
 # Copy solution file first
-COPY *.slnx ./
+COPY *.sln ./
 
 # Copy csproj files
 COPY mymusic-app/*.csproj ./mymusic-app/
 
 # Restore dependencies using the solution file
-RUN dotnet restore *.slnx
+RUN dotnet restore *.sln
 
 # Copy the rest of the source code
 COPY mymusic-app/. ./mymusic-app/
