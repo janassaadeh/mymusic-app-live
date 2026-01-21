@@ -5,7 +5,7 @@ FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 
 # Copy solution file first
-COPY *.sln ./
+COPY *.slnx ./
 
 # Copy csproj files
 COPY mymusic-app/*.csproj ./mymusic-app/
