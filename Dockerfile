@@ -6,16 +6,16 @@ WORKDIR /src
 COPY *.sln ./
 
 # Copy csproj files for restore
-COPY mymusic_app/*.csproj ./mymusic_app/
+COPY mymusic-app/*.csproj ./mymusic-app/
 
 # Restore dependencies
 RUN dotnet restore
 
 # Copy the rest of the source code
-COPY mymusic_app/. ./mymusic_app/
+COPY mymusic-app/. ./mymusic-app/
 
 # Build the project
-WORKDIR /src/mymusic_app
+WORKDIR /src/mymusic-app
 RUN dotnet publish -c Release -o /app/publish
 
 # Runtime image
@@ -24,4 +24,4 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 EXPOSE 80
-ENTRYPOINT ["dotnet", "mymusic_app.dll"]
+ENTRYPOINT ["dotnet", "mymusic-app.dll"]
