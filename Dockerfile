@@ -11,7 +11,7 @@ COPY *.sln ./
 COPY mymusic-app/*.csproj ./mymusic-app/
 
 # Restore dependencies using the solution file
-RUN dotnet restore *.sln
+RUN dotnet restore *.slnx
 
 # Copy the rest of the source code
 COPY mymusic-app/. ./mymusic-app/
