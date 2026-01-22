@@ -29,8 +29,8 @@ WORKDIR /app
 # Copy published app from build stage
 COPY --from=build /app/publish .
 
-# Expose port 80
-EXPOSE 80
+# Expose port 8080
+EXPOSE 8080
 
 # Start the app
 ENTRYPOINT ["dotnet", "mymusic-app.dll"]

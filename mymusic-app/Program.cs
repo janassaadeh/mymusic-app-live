@@ -11,11 +11,17 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 //
+// ---------------- PORT BINDING (RENDER FIX) ----------------
+// Render injects PORT env var — MUST bind to it
+//
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
+//
 // ---------------- DATABASE ----------------
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
-
 
 //
 // ---------------- REPOSITORIES ----------------
@@ -42,9 +48,9 @@ builder.Services.AddScoped<IUserService, UserService>();
 //
 // ---------------- AUTH SERVICE ----------------
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-string jwtKey = jwtSettings.GetValue<string>("Key");
-string jwtIssuer = jwtSettings.GetValue<string>("Issuer");
-string jwtAudience = jwtSettings.GetValue<string>("Audience");
+string jwtKey = jwtSettings.GetValue<string>("Key")!;
+string jwtIssuer = jwtSettings.GetValue<string>("Issuer")!;
+string jwtAudience = jwtSettings.GetValue<string>("Audience")!;
 
 builder.Services.AddScoped<IAuthService>(sp =>
 {
@@ -57,29 +63,27 @@ builder.Services.AddScoped<IAuthService>(sp =>
 builder.Services.AddControllersWithViews()
     .AddJsonOptions(options =>
     {
-        // Handle cycles in object graphs (Artist ↔ Genre)
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
         options.JsonSerializerOptions.WriteIndented = true;
-        options.JsonSerializerOptions.MaxDepth = 64; // optional, default is 32
+        options.JsonSerializerOptions.MaxDepth = 64;
     });
 
 //
 // ---------------- AUTHENTICATION ----------------
 
-// Cookie-based auth for web
+// Cookie auth (MVC)
 builder.Services.AddAuthentication(options =>
 {
-    // Default for web pages (MVC)
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 })
 .AddCookie(options =>
 {
     options.LoginPath = "/Auth/Login";
-    options.AccessDeniedPath = "/Auth/AccessDenied"; // redirect non-admins
+    options.AccessDeniedPath = "/Auth/AccessDenied";
 })
+// JWT auth (API)
 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
 {
-    // JWT Bearer auth for API
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -88,13 +92,17 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtIssuer,
         ValidAudience = jwtAudience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(jwtKey))
     };
 });
 
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+//
+// ---------------- SEED ADMIN ----------------
 using (var scope = app.Services.CreateScope())
 {
     var userRepo = scope.ServiceProvider.GetRequiredService<IUserRepository>();
@@ -102,13 +110,14 @@ using (var scope = app.Services.CreateScope())
 
     string adminEmail = "admin@musicapp.com";
     var existingAdmin = await userRepo.GetByEmailAsync(adminEmail);
+
     if (existingAdmin == null)
     {
         Console.WriteLine("Seeding initial admin...");
 
         await authService.RegisterAsync(
             email: adminEmail,
-            password: "StrongPassword123!", // CHANGE TO SECURE PASSWORD
+            password: "StrongPassword123!", // CHANGE IN PROD
             firstName: "Super",
             lastName: "Admin",
             dob: DateTime.UtcNow.AddYears(-30),
@@ -116,9 +125,10 @@ using (var scope = app.Services.CreateScope())
             isAdmin: true
         );
 
-        Console.WriteLine("Admin created successfully.");
+        Console.WriteLine("Admin created.");
     }
 }
+
 //
 // ---------------- MIDDLEWARE ----------------
 if (!app.Environment.IsDevelopment())
@@ -127,20 +137,24 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
+// ❌ DO NOT redirect HTTPS in Render / Docker
+// app.UseHttpsRedirection();
 
+app.UseStaticFiles();
 app.UseRouting();
 
-// Authentication must come before authorization
+// Authentication BEFORE Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
 //
-// ---------------- ROUTING ----------------
-// Default route goes directly to Admin/Index
+// ---------------- ROUTES ----------------
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+//
+// ---------------- HEALTH CHECK (RENDER) ----------------
+app.MapGet("/health", () => Results.Ok("Healthy"));
 
 app.Run();
