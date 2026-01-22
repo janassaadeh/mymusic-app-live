@@ -23,7 +23,7 @@ RUN dotnet publish -c Release -o /app/publish
 # ----------------------------
 # Stage 2: Runtime
 # ----------------------------
-FROM mcr.microsoft.com/dotnet/aspnet:7.0
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
 # Copy published app from build stage
