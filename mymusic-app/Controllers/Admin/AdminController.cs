@@ -29,7 +29,6 @@ namespace mymusic_app.Controllers.Admin
             _genreService = genreService;
         }
 
-        // GET: /Admin/
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -41,7 +40,8 @@ namespace mymusic_app.Controllers.Admin
             return View();
         }
 
-        // POST: /Admin/CreateAlbum
+        // ---------------- CREATE ----------------
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAlbum(
@@ -54,7 +54,7 @@ namespace mymusic_app.Controllers.Admin
             {
                 Title = Title,
                 CoverImageUrl = CoverImageUrl,
-                ReleaseDate = ReleaseDate,
+                ReleaseDate = DateTime.SpecifyKind(ReleaseDate, DateTimeKind.Utc), // <-- UTC fix
                 ArtistId = ArtistId
             };
 
@@ -62,7 +62,6 @@ namespace mymusic_app.Controllers.Admin
             return RedirectToAction("Index");
         }
 
-        // POST: /Admin/CreateArtist
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateArtist(
@@ -89,7 +88,6 @@ namespace mymusic_app.Controllers.Admin
             return RedirectToAction("Index");
         }
 
-        // POST: /Admin/CreateSong
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateSong(
@@ -123,7 +121,6 @@ namespace mymusic_app.Controllers.Admin
             return RedirectToAction("Index");
         }
 
-        // POST: /Admin/CreateGenre
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateGenre(string Name)
@@ -132,57 +129,51 @@ namespace mymusic_app.Controllers.Admin
             await _genreService.CreateAsync(genre);
             return RedirectToAction("Index");
         }
-        // DELETE GENRE
+
+        // ---------------- DELETE ----------------
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteGenre(Guid id)
         {
             var genre = await _genreService.GetByIdAsync(id);
             if (genre != null)
-            {
                 await _genreService.DeleteAsync(id);
-            }
             return RedirectToAction("Index");
         }
 
-        // DELETE ARTIST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteArtist(Guid id)
         {
             var artist = await _artistService.GetArtistByIdAsync(id);
             if (artist != null)
-            {
                 await _artistService.DeleteAsync(id);
-            }
             return RedirectToAction("Index");
         }
 
-        // DELETE ALBUM
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteAlbum(Guid id)
         {
             var album = await _albumService.GetByIdAsync(id);
             if (album != null)
-            {
                 await _albumService.DeleteAsync(id);
-            }
             return RedirectToAction("Index");
         }
 
-        // DELETE SONG
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteSong(Guid id)
         {
             var song = await _songService.GetByIdAsync(id);
             if (song != null)
-            {
                 await _songService.DeleteAsync(id);
-            }
             return RedirectToAction("Index");
         }
+
+        // ---------------- UPDATE ----------------
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateGenre(Guid id, string Name)
@@ -219,7 +210,7 @@ namespace mymusic_app.Controllers.Admin
             {
                 album.Title = Title;
                 album.CoverImageUrl = CoverImageUrl;
-                album.ReleaseDate = ReleaseDate;
+                album.ReleaseDate = DateTime.SpecifyKind(ReleaseDate, DateTimeKind.Utc); // <-- UTC fix
                 await _albumService.UpdateAsync(album);
             }
             return RedirectToAction("Index");
@@ -240,7 +231,4 @@ namespace mymusic_app.Controllers.Admin
             return RedirectToAction("Index");
         }
     }
-
 }
-
-
