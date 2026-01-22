@@ -41,7 +41,7 @@ namespace mymusic_app.Services
                 PasswordHash = HashPassword(password),
                 FirstName = firstName,
                 LastName = lastName,
-                DateOfBirth = dob,
+                DateOfBirth = DateTime.SpecifyKind(dob, DateTimeKind.Utc),
                 Gender = gender,
                 IsAdmin = isAdmin,
                 Bio = string.Empty
