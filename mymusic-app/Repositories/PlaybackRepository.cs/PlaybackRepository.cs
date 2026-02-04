@@ -36,7 +36,7 @@ namespace mymusic_app.Repositories
                     al.Id AS AlbumId,
                     al.Title AS AlbumTitle,
                     al.CoverImageUrl
-                FROM UserSongPlays p
+                FROM ""UserSongPlays"" p
                 JOIN Songs s ON p.SongId = s.Id
                 LEFT JOIN Artists a ON s.ArtistId = a.Id
                 LEFT JOIN Albums al ON s.AlbumId = al.Id
@@ -78,7 +78,7 @@ namespace mymusic_app.Repositories
             await conn.OpenAsync();
 
             await using var cmd = new NpgsqlCommand(@"
-                DELETE FROM UserSongPlays
+                DELETE FROM ""UserSongPlays""
                 WHERE UserId = @UserId
                   AND PlayedAt < NOW() - INTERVAL '1 day'
             ", conn);
@@ -112,7 +112,7 @@ namespace mymusic_app.Repositories
                     al.CoverImageUrl
                 FROM Followings f
                 JOIN Users u ON f.FollowingId = u.Id
-                JOIN UserSongPlays p ON p.UserId = u.Id
+                JOIN ""UserSongPlays"" p ON p.UserId = u.Id
                 JOIN Songs s ON s.Id = p.SongId
                 LEFT JOIN Artists a ON s.ArtistId = a.Id
                 LEFT JOIN Albums al ON s.AlbumId = al.Id
@@ -166,7 +166,7 @@ namespace mymusic_app.Repositories
             await conn.OpenAsync();
 
             await using var cmd = new NpgsqlCommand(@"
-                INSERT INTO UserSongPlays (Id, UserId, SongId, PlayedAt)
+                INSERT INTO ""UserSongPlays"" (Id, UserId, SongId, PlayedAt)
                 VALUES (gen_random_uuid(), @UserId, @SongId, NOW())
             ", conn);
 
