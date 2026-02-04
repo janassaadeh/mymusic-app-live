@@ -166,7 +166,7 @@ namespace mymusic_app.Repositories
             await conn.OpenAsync();
 
             await using var cmd = new NpgsqlCommand(@"
-                INSERT INTO ""UserSongPlays"" (Id, UserId, SongId, PlayedAt)
+                INSERT INTO ""UserSongPlays"" (""Id"", UserId, SongId, PlayedAt)
                 VALUES (gen_random_uuid(), @UserId, @SongId, NOW())
             ", conn);
 
