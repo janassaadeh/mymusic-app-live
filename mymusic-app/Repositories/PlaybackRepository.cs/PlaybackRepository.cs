@@ -14,9 +14,10 @@ namespace mymusic_app.Repositories
         private readonly string _connectionString;
         private readonly AppDbContext _db;
 
-        public PlaybackRepository(IConfiguration config)
+        public PlaybackRepository(IConfiguration config, AppDbContext db)
         {
             _connectionString = config.GetConnectionString("DefaultConnection");
+            _db = db;
         }
 
         // ============================================================
