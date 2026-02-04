@@ -1,6 +1,8 @@
-﻿using Npgsql;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using mymusic_app.Controllers.Data;
 using mymusic_app.Models;
+using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,6 +12,7 @@ namespace mymusic_app.Repositories
     public class PlaybackRepository : IPlaybackRepository
     {
         private readonly string _connectionString;
+        private readonly AppDbContext _db;
 
         public PlaybackRepository(IConfiguration config)
         {
@@ -162,18 +165,17 @@ namespace mymusic_app.Repositories
         // ============================================================
         public async Task RecordSongPlayAsync(Guid userId, Guid songId)
         {
-            await using var conn = new NpgsqlConnection(_connectionString);
-            await conn.OpenAsync();
+            var play = new UserSongPlay
+            {
+                Id = Guid.NewGuid(),     // replaces gen_random_uuid()
+                UserId = userId,
+                SongId = songId,
+                PlayedAt = DateTime.UtcNow
+            };
 
-            await using var cmd = new NpgsqlCommand(@"
-                INSERT INTO ""UserSongPlays"" (""Id"", ""UserId"", ""SongId"", ""PlayedAt"")
-                VALUES (gen_random_uuid(), @""UserId"", @""SongId"", NOW())
-            ", conn);
+            _db.UserSongPlays.Add(play);
 
-            cmd.Parameters.AddWithValue("UserId", userId);
-            cmd.Parameters.AddWithValue("SongId", songId);
-
-            await cmd.ExecuteNonQueryAsync();
+            await _db.SaveChangesAsync();
         }
 
         // ============================================================
