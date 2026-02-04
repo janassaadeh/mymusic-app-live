@@ -166,9 +166,15 @@ namespace mymusic_app.Repositories
         // ============================================================
         public async Task RecordSongPlayAsync(Guid userId, Guid songId)
         {
+            var songExists = await _db.Songs
+                .AnyAsync(s => s.Id == songId);
+
+            if (!songExists)
+                throw new KeyNotFoundException($"Song {songId} does not exist.");
+
             var play = new UserSongPlay
             {
-                Id = Guid.NewGuid(),     // replaces gen_random_uuid()
+                Id = Guid.NewGuid(),
                 UserId = userId,
                 SongId = songId,
                 PlayedAt = DateTime.UtcNow
@@ -178,6 +184,7 @@ namespace mymusic_app.Repositories
 
             await _db.SaveChangesAsync();
         }
+
 
         // ============================================================
         // LIKES
