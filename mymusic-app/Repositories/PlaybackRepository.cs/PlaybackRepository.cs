@@ -25,71 +25,29 @@ namespace mymusic_app.Repositories
         // ============================================================
         public async Task<IEnumerable<Song>> GetRecentlyPlayedSongsAsync(Guid userId)
         {
-            var songs = new List<Song>();
-
-            await using var conn = new NpgsqlConnection(_connectionString);
-            await conn.OpenAsync();
-
-            await using var cmd = new NpgsqlCommand(@"
-                SELECT
-                    s.Id,
-                    s.Title,
-                    s.Duration,
-                    a.Id AS ArtistId,
-                    a.Name AS ArtistName,
-                    al.Id AS AlbumId,
-                    al.Title AS AlbumTitle,
-                    al.CoverImageUrl
-                FROM ""UserSongPlays"" p
-                JOIN Songs s ON p.SongId = s.Id
-                LEFT JOIN Artists a ON s.ArtistId = a.Id
-                LEFT JOIN Albums al ON s.AlbumId = al.Id
-                WHERE p.UserId = @UserId
-                ORDER BY p.PlayedAt DESC
-                LIMIT 20
-            ", conn);
-
-            cmd.Parameters.AddWithValue("UserId", userId);
-
-            await using var reader = await cmd.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
-            {
-                songs.Add(new Song
-                {
-                    Id = reader.GetGuid(0),
-                    Title = reader.GetString(1),
-                    Duration = reader.GetTimeSpan(2),
-                    Artist = reader.IsDBNull(3) ? null : new Artist
-                    {
-                        Id = reader.GetGuid(3),
-                        Name = reader.GetString(4)
-                    },
-                    Album = reader.IsDBNull(5) ? null : new Album
-                    {
-                        Id = reader.GetGuid(5),
-                        Title = reader.GetString(6),
-                        CoverImageUrl = reader.IsDBNull(7) ? null : reader.GetString(7)
-                    }
-                });
-            }
-
-            return songs;
+            return await _db.UserSongPlays
+                .Where(p => p.UserId == userId)
+                .OrderByDescending(p => p.PlayedAt)
+                .Select(p => p.Song)
+                .Include(s => s.Artist)
+                .Include(s => s.Album)
+                .Take(20)
+                .ToListAsync();
         }
+
 
         public async Task DeleteOldRecentlyPlayedAsync(Guid userId)
         {
-            await using var conn = new NpgsqlConnection(_connectionString);
-            await conn.OpenAsync();
+            var cutoff = DateTime.UtcNow.AddDays(-1);
 
-            await using var cmd = new NpgsqlCommand(@"
-                DELETE FROM ""UserSongPlays""
-                WHERE UserId = @UserId
-                  AND PlayedAt < NOW() - INTERVAL '1 day'
-            ", conn);
+            var oldRecords = await _db.UserSongPlays
+                .Where(p => p.UserId == userId && p.PlayedAt < cutoff)
+                .ToListAsync();
 
-            cmd.Parameters.AddWithValue("UserId", userId);
-            await cmd.ExecuteNonQueryAsync();
+            _db.UserSongPlays.RemoveRange(oldRecords);
+            await _db.SaveChangesAsync();
         }
+
 
         // ============================================================
         // FOLLOWED USERS RECENT PLAYS
