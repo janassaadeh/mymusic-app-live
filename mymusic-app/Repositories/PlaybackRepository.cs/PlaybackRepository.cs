@@ -27,10 +27,12 @@ namespace mymusic_app.Repositories
         {
             return await _db.UserSongPlays
                 .Where(p => p.UserId == userId)
+                .Include(p => p.Song)
+                    .ThenInclude(s => s.Artist)
+                .Include(p => p.Song)
+                    .ThenInclude(s => s.Album)
                 .OrderByDescending(p => p.PlayedAt)
                 .Select(p => p.Song)
-                .Include(s => s.Artist)
-                .Include(s => s.Album)
                 .Take(20)
                 .ToListAsync();
         }
