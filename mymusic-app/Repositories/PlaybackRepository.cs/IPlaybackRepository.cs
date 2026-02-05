@@ -9,6 +9,7 @@ namespace mymusic_app.Repositories
         Task<IEnumerable<(User User, Song Song)>> GetFollowedUsersRecentPlaysAsync(Guid userId);
         Task DeleteOldRecentlyPlayedAsync(Guid userId);
 
+
         // ---------------- SONG PLAYS ----------------
         Task RecordSongPlayAsync(Guid userId, Guid songId);
 

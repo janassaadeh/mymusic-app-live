@@ -162,7 +162,13 @@ namespace mymusic_app.Controllers.Api
             var songs = await _userService.GetRecentlyPlayedAsync(userId);
             return Ok(songs);
         }
-
+        [HttpGet("most-played")]
+        public async Task<IActionResult> MostPlayed()
+        {
+            var userId = GetCurrentUserId();
+            var songs = await _userService.GetTopPlayedSongsAsync(userId);
+            return Ok(songs);
+        }
         [HttpGet("followed-artists")]
         public async Task<IActionResult> FollowedArtists()
         {
