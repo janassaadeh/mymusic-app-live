@@ -1,4 +1,6 @@
-﻿namespace mymusic_app.Models
+﻿using System.Text.Json.Serialization;
+
+namespace mymusic_app.Models
 {
     public class Song
     {
@@ -16,6 +18,8 @@
         public ICollection<SongGenre> Genres { get; set; }
         public ICollection<UserSongLike> Likes { get; set; }
         public ICollection<UserSongPlay> Plays { get; set; }
+
+        [JsonIgnore]
         public ICollection<PlaylistSong> Playlists { get; set; }
     }
 

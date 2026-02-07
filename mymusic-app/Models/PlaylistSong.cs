@@ -1,8 +1,12 @@
-﻿namespace mymusic_app.Models
+﻿using System.Text.Json.Serialization;
+
+namespace mymusic_app.Models
 {
     public class PlaylistSong
     {
         public Guid PlaylistId { get; set; }
+
+        [JsonIgnore]
         public Playlist Playlist { get; set; }
 
         public Guid SongId { get; set; }
